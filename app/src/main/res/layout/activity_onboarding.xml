@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/keyboard_bg">
+    android:background="?attr/colorKeyboardBg">
 
     <LinearLayout
         android:id="@+id/onboardingTopArea"
@@ -182,7 +182,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
 
                 <LinearLayout
                     android:id="@+id/onboardingChooseRow"
@@ -214,7 +214,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
 
                 <LinearLayout
                     android:id="@+id/onboardingLayoutRow"
@@ -340,7 +340,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
 
                 <EditText
                     android:id="@+id/onboardingApiKeyInput"
@@ -358,14 +358,14 @@
                     android:paddingEnd="0dp"
                     android:scrollHorizontally="true"
                     android:textColor="?android:attr/textColorPrimary"
-                    android:textColorHint="@color/space_text"
+                    android:textColorHint="?attr/colorSpaceText"
                     android:textSize="14sp" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
 
             </LinearLayout>
 
@@ -454,7 +454,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
 
                 <LinearLayout
                     android:id="@+id/onboardingSwipeTypingRow"
@@ -517,7 +517,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
 
                 <LinearLayout
                     android:id="@+id/onboardingVoiceRecognitionRow"
@@ -580,7 +580,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.2"
-                    android:background="@color/key_text" />
+                    android:background="?attr/colorKeyText" />
             </LinearLayout>
 
             <LinearLayout

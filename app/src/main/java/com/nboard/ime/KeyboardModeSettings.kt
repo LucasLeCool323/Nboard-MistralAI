@@ -34,7 +34,7 @@ enum class AppThemeMode(val value: String) {
     SYSTEM("system"),
     LIGHT("light"),
     DARK("dark"),
-    DARK_CLASSIC("dark_classic")
+    AMOLED("amoled")
 }
 
 enum class KeyboardFontMode(val value: String) {
@@ -204,13 +204,13 @@ object KeyboardModeSettings {
     }
 
     fun loadThemeMode(context: Context): AppThemeMode {
-        return when (
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getString(KEY_THEME_MODE, AppThemeMode.SYSTEM.value)
-        ) {
+        val raw = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_THEME_MODE, AppThemeMode.SYSTEM.value)
+        return when (raw) {
             AppThemeMode.LIGHT.value -> AppThemeMode.LIGHT
-            AppThemeMode.DARK_CLASSIC.value -> AppThemeMode.DARK_CLASSIC
             AppThemeMode.DARK.value -> AppThemeMode.DARK
+            AppThemeMode.AMOLED.value,
+            "dark_classic" -> AppThemeMode.AMOLED
             else -> AppThemeMode.SYSTEM
         }
     }

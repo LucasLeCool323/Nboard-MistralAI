@@ -1,15 +1,6 @@
 package com.nboard.ime
 
-import android.graphics.Color
-
 const val TAG = "NboardImeService"
-
-val CLASSIC_DARK_KEYBOARD_BG = Color.parseColor("#202327")
-val CLASSIC_DARK_KEY_BG = Color.parseColor("#30343A")
-val CLASSIC_DARK_KEY_SPECIAL_BG = Color.parseColor("#3C4148")
-val CLASSIC_DARK_TEXT = Color.parseColor("#F1F3F4")
-val CLASSIC_DARK_SPACE_TEXT = Color.parseColor("#8A9097")
-val CLASSIC_DARK_POPUP_SHADOW = Color.parseColor("#15191F")
 
 const val KEY_REPEAT_START_DELAY_MS = 260L
 const val KEY_REPEAT_INTERVAL_MS = 45L

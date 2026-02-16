@@ -59,7 +59,9 @@ class MainActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemePreference(KeyboardModeSettings.loadThemeMode(this))
+        val themeMode = KeyboardModeSettings.loadThemeMode(this)
+        setTheme(themeStyleFor(themeMode))
+        applyThemePreference(themeMode)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -381,12 +383,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showThemeDialog() {
         val current = KeyboardModeSettings.loadThemeMode(this)
-        val options = arrayOf("System", "Light", "Dark", "Dark (Classic)")
+        val options = arrayOf("System", "Light", "Dark", "AMOLED Black")
         val selected = when (current) {
             AppThemeMode.SYSTEM -> 0
             AppThemeMode.LIGHT -> 1
             AppThemeMode.DARK -> 2
-            AppThemeMode.DARK_CLASSIC -> 3
+            AppThemeMode.AMOLED -> 3
         }
 
         AlertDialog.Builder(this)
@@ -395,7 +397,7 @@ class MainActivity : AppCompatActivity() {
                 val mode = when (which) {
                     1 -> AppThemeMode.LIGHT
                     2 -> AppThemeMode.DARK
-                    3 -> AppThemeMode.DARK_CLASSIC
+                    3 -> AppThemeMode.AMOLED
                     else -> AppThemeMode.SYSTEM
                 }
                 KeyboardModeSettings.saveThemeMode(this, mode)
@@ -673,7 +675,7 @@ class MainActivity : AppCompatActivity() {
             AppThemeMode.SYSTEM -> "System"
             AppThemeMode.LIGHT -> "Light"
             AppThemeMode.DARK -> "Dark"
-            AppThemeMode.DARK_CLASSIC -> "Dark (Classic)"
+            AppThemeMode.AMOLED -> "AMOLED Black"
         }
         fontValue.text = when (KeyboardModeSettings.loadFontMode(this)) {
             KeyboardFontMode.INTER -> "Inter"
@@ -727,10 +729,18 @@ class MainActivity : AppCompatActivity() {
             AppThemeMode.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             AppThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
             AppThemeMode.DARK,
-            AppThemeMode.DARK_CLASSIC -> AppCompatDelegate.MODE_NIGHT_YES
+            AppThemeMode.AMOLED -> AppCompatDelegate.MODE_NIGHT_YES
         }
         if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
             AppCompatDelegate.setDefaultNightMode(nightMode)
+        }
+    }
+
+    private fun themeStyleFor(mode: AppThemeMode): Int {
+        return if (mode == AppThemeMode.AMOLED) {
+            R.style.Theme_Nboard_Amoled
+        } else {
+            R.style.Theme_Nboard
         }
     }
 

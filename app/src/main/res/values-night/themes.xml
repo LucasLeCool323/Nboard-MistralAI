@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Nboard" parent="Theme.Material3.Dark.NoActionBar" />
+    <style name="Theme.Nboard" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorKeyboardBg">@color/keyboard_bg</item>
+        <item name="colorKeyBg">@color/key_bg</item>
+        <item name="colorKeySpecialBg">@color/key_special_bg</item>
+        <item name="colorKeyText">@color/key_text</item>
+        <item name="colorSpaceText">@color/space_text</item>
+        <item name="colorSendBg">@color/send_bg</item>
+        <item name="colorSendText">@color/send_text</item>
+        <item name="colorPopupShadow">@color/popup_shadow</item>
+    </style>
+
+    <style name="Theme.Nboard.Amoled" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorKeyboardBg">@color/amoled_keyboard_bg</item>
+        <item name="colorKeyBg">@color/amoled_key_bg</item>
+        <item name="colorKeySpecialBg">@color/amoled_key_special_bg</item>
+        <item name="colorKeyText">@color/amoled_key_text</item>
+        <item name="colorSpaceText">@color/amoled_space_text</item>
+        <item name="colorSendBg">@color/amoled_send_bg</item>
+        <item name="colorSendText">@color/amoled_send_text</item>
+        <item name="colorPopupShadow">@color/amoled_popup_shadow</item>
+    </style>
 </resources>

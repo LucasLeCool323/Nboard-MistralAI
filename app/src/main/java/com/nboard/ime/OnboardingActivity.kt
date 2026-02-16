@@ -72,7 +72,9 @@ class OnboardingActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemePreference(KeyboardModeSettings.loadThemeMode(this))
+        val themeMode = KeyboardModeSettings.loadThemeMode(this)
+        setTheme(themeStyleFor(themeMode))
+        applyThemePreference(themeMode)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_onboarding)
 
@@ -493,10 +495,18 @@ class OnboardingActivity : AppCompatActivity() {
             AppThemeMode.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             AppThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
             AppThemeMode.DARK,
-            AppThemeMode.DARK_CLASSIC -> AppCompatDelegate.MODE_NIGHT_YES
+            AppThemeMode.AMOLED -> AppCompatDelegate.MODE_NIGHT_YES
         }
         if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
             AppCompatDelegate.setDefaultNightMode(nightMode)
+        }
+    }
+
+    private fun themeStyleFor(mode: AppThemeMode): Int {
+        return if (mode == AppThemeMode.AMOLED) {
+            R.style.Theme_Nboard_Amoled
+        } else {
+            R.style.Theme_Nboard
         }
     }
 

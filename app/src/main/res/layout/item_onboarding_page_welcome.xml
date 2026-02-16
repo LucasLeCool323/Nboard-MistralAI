@@ -40,7 +40,7 @@
         android:fontFamily="@font/inter_variable"
         android:gravity="center"
         android:text="Clean minimalist keyboard with integrated AI tools"
-        android:textColor="@color/key_text"
+        android:textColor="?attr/colorKeyText"
         android:textSize="14sp"
         android:alpha="0.7" />
 </LinearLayout>

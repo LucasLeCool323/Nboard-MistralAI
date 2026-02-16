@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorKeyboardBg" format="color" />
+    <attr name="colorKeyBg" format="color" />
+    <attr name="colorKeySpecialBg" format="color" />
+    <attr name="colorKeyText" format="color" />
+    <attr name="colorSpaceText" format="color" />
+    <attr name="colorSendBg" format="color" />
+    <attr name="colorSendText" format="color" />
+    <attr name="colorPopupShadow" format="color" />
+</resources>

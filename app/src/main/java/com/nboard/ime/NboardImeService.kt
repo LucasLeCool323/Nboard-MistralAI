@@ -34,6 +34,8 @@ import android.text.InputFilter
 import android.text.InputType
 import android.text.TextUtils
 import android.util.Log
+import android.util.TypedValue
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
@@ -405,18 +407,23 @@ class NboardImeService : InputMethodService() {
 
     private fun createKeyboardUiContext(): Context {
         val themeMode = appThemeMode
-        if (themeMode == AppThemeMode.SYSTEM) {
-            return this
+        val baseContext = when (themeMode) {
+            AppThemeMode.SYSTEM -> this
+            AppThemeMode.LIGHT -> createUiModeContext(Configuration.UI_MODE_NIGHT_NO)
+            AppThemeMode.DARK,
+            AppThemeMode.AMOLED -> createUiModeContext(Configuration.UI_MODE_NIGHT_YES)
         }
-
-        val targetNightMode = if (themeMode == AppThemeMode.DARK || themeMode == AppThemeMode.DARK_CLASSIC) {
-            Configuration.UI_MODE_NIGHT_YES
+        val style = if (themeMode == AppThemeMode.AMOLED) {
+            R.style.Theme_Nboard_Amoled
         } else {
-            Configuration.UI_MODE_NIGHT_NO
+            R.style.Theme_Nboard
         }
+        return ContextThemeWrapper(baseContext, style)
+    }
 
+    private fun createUiModeContext(uiNightMode: Int): Context {
         val config = Configuration(resources.configuration)
-        config.uiMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or targetNightMode
+        config.uiMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or uiNightMode
         return createConfigurationContext(config)
     }
 
@@ -1566,42 +1573,40 @@ class NboardImeService : InputMethodService() {
     }
 
     internal fun uiColor(colorRes: Int): Int {
-        if (appThemeMode == AppThemeMode.DARK_CLASSIC) {
-            classicDarkColorOverride(colorRes)?.let { return it }
+        val themeAttr = colorAttrFor(colorRes)
+        if (themeAttr != null) {
+            resolveThemeColor(themeAttr)?.let { return it }
         }
         return ContextCompat.getColor(keyboardUiContext, colorRes)
     }
 
     internal fun uiDrawable(drawableRes: Int) =
-        AppCompatResources.getDrawable(keyboardUiContext, drawableRes)?.mutate()?.also { drawable ->
-            if (appThemeMode != AppThemeMode.DARK_CLASSIC) {
-                return@also
-            }
-            val tintColor = when (drawableRes) {
-                R.drawable.bg_keyboard_container -> uiColor(R.color.keyboard_bg)
-                R.drawable.bg_key,
-                R.drawable.bg_space_key,
-                R.drawable.bg_chip,
-                R.drawable.bg_prediction_side_chip,
-                R.drawable.bg_popup_option -> uiColor(R.color.key_bg)
-                R.drawable.bg_special_key,
-                R.drawable.bg_send_button -> uiColor(R.color.key_special_bg)
-                else -> null
-            }
-            tintColor?.let { drawable.setTint(it) }
-        }
+        AppCompatResources.getDrawable(keyboardUiContext, drawableRes)?.mutate()
 
-    private fun classicDarkColorOverride(colorRes: Int): Int? {
+    private fun colorAttrFor(colorRes: Int): Int? {
         return when (colorRes) {
-            R.color.keyboard_bg -> CLASSIC_DARK_KEYBOARD_BG
-            R.color.key_bg -> CLASSIC_DARK_KEY_BG
-            R.color.key_special_bg -> CLASSIC_DARK_KEY_SPECIAL_BG
-            R.color.key_text -> CLASSIC_DARK_TEXT
-            R.color.space_text -> CLASSIC_DARK_SPACE_TEXT
-            R.color.send_bg -> CLASSIC_DARK_KEY_SPECIAL_BG
-            R.color.send_text -> CLASSIC_DARK_TEXT
-            R.color.popup_shadow -> CLASSIC_DARK_POPUP_SHADOW
+            R.color.keyboard_bg -> R.attr.colorKeyboardBg
+            R.color.key_bg -> R.attr.colorKeyBg
+            R.color.key_special_bg -> R.attr.colorKeySpecialBg
+            R.color.key_text -> R.attr.colorKeyText
+            R.color.space_text -> R.attr.colorSpaceText
+            R.color.send_bg -> R.attr.colorSendBg
+            R.color.send_text -> R.attr.colorSendText
+            R.color.popup_shadow -> R.attr.colorPopupShadow
             else -> null
+        }
+    }
+
+    private fun resolveThemeColor(attr: Int): Int? {
+        val outValue = TypedValue()
+        val resolved = keyboardUiContext.theme.resolveAttribute(attr, outValue, true)
+        if (!resolved) {
+            return null
+        }
+        return if (outValue.resourceId != 0) {
+            ContextCompat.getColor(keyboardUiContext, outValue.resourceId)
+        } else {
+            outValue.data
         }
     }
 

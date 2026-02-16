@@ -13,4 +13,13 @@
     <color name="ai_text_shine">#FFE082</color>
     <color name="popup_shadow">#BABABA</color>
     <color name="popup_selected_dark">#E3AE00</color>
+
+    <color name="amoled_keyboard_bg">#000000</color>
+    <color name="amoled_key_bg">#0A0A0A</color>
+    <color name="amoled_key_special_bg">#151515</color>
+    <color name="amoled_key_text">#FFFFFF</color>
+    <color name="amoled_space_text">#9A9A9A</color>
+    <color name="amoled_send_bg">#151515</color>
+    <color name="amoled_send_text">#FFFFFF</color>
+    <color name="amoled_popup_shadow">#000000</color>
 </resources>

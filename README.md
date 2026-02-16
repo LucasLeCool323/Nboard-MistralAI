@@ -63,7 +63,7 @@ If you want additional features, fork it! It's open source (AGPL-3.0) for exactl
 - Emoji browser + search mode
 - AI tools (Summarize, Fix Grammar, Expand, free prompt with selected-text context support, language preserved by default)
 - Contextual action icon based on input field type
-- Theme options: `System`, `Light`, `Dark`, `Dark (Classic)`
+- Theme options: `System`, `Light`, `Dark`, `AMOLED Black`
 - Font options: `Inter` / `Roboto`
 - Configurable side mode keys (AI / Clipboard / Emoji) on classic layouts
 - Gboard tool key behavior with press-and-hold quick access for AI / Clipboard / Emoji
