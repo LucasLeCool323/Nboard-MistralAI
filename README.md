@@ -76,6 +76,29 @@ If you want additional features, fork it! It's open source (AGPL-3.0) for exactl
 
 These features are currently in beta and may have occasional issues.
 
+## Layout Pack Import (XML)
+
+Nboard now supports importing custom keyboard layout packs from a local XML file in settings:
+
+- Open `Settings` → `Layout packs`
+- Tap `Import file`
+- Select an XML file from storage
+
+Expected XML shape:
+
+```xml
+<layout-pack id="community.qwerty.classic" name="Community QWERTY" bottomStyle="classic" qwertyLike="true">
+  <row1>q w e r t y u i o p</row1>
+  <row2>a s d f g h j k l</row2>
+  <row3>z x c v b n m , '</row3>
+</layout-pack>
+```
+
+- `bottomStyle`: `classic` or `gboard`
+- `qwertyLike`: `true` or `false` (controls row shaping behavior)
+
+Reference file: [`docs/layout-pack-example.xml`](docs/layout-pack-example.xml)
+
 ## How Autocorrect and Prediction Work
 
 ### Autocorrect (local, on-device)

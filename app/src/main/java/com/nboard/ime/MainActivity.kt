@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var languageValue: TextView
     private lateinit var keyboardValue: TextView
+    private lateinit var uploadedLayoutNoticeCard: View
+    private lateinit var uploadedLayoutNoticeText: TextView
     private lateinit var numberRowSettingValue: TextView
     private lateinit var autoSpaceAfterPunctuationValue: TextView
     private lateinit var autoCapitalizeAfterPunctuationValue: TextView
@@ -37,8 +40,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rightKeyModesRow: View
     private lateinit var leftKeyModesValue: TextView
     private lateinit var rightKeyModesValue: TextView
+    private lateinit var deleteLayoutPackRow: View
+    private lateinit var deleteLayoutPackValue: TextView
     private lateinit var themeValue: TextView
     private lateinit var fontValue: TextView
+    private lateinit var debugSectionTitle: View
+    private lateinit var debugCard: View
+    private val importLayoutPackLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            importLayoutPackFromUri(uri)
+        }
+    }
+    private val exportDebugLayoutPackLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/xml")) { uri ->
+            if (uri != null) {
+                writeDebugPackToUri(uri)
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyThemePreference(KeyboardModeSettings.loadThemeMode(this))
@@ -48,6 +66,8 @@ class MainActivity : AppCompatActivity() {
         statusText = findViewById(R.id.statusText)
         languageValue = findViewById(R.id.languageValue)
         keyboardValue = findViewById(R.id.keyboardValue)
+        uploadedLayoutNoticeCard = findViewById(R.id.uploadedLayoutNoticeCard)
+        uploadedLayoutNoticeText = findViewById(R.id.uploadedLayoutNoticeText)
         numberRowSettingValue = findViewById(R.id.numberRowSettingValue)
         autoSpaceAfterPunctuationValue = findViewById(R.id.autoSpaceAfterPunctuationValue)
         autoCapitalizeAfterPunctuationValue = findViewById(R.id.autoCapitalizeAfterPunctuationValue)
@@ -62,8 +82,12 @@ class MainActivity : AppCompatActivity() {
         rightKeyModesRow = findViewById(R.id.rightKeyModesRow)
         leftKeyModesValue = findViewById(R.id.leftKeyModesValue)
         rightKeyModesValue = findViewById(R.id.rightKeyModesValue)
+        deleteLayoutPackRow = findViewById(R.id.deleteLayoutPackRow)
+        deleteLayoutPackValue = findViewById(R.id.deleteLayoutPackValue)
         themeValue = findViewById(R.id.themeValue)
         fontValue = findViewById(R.id.fontValue)
+        debugSectionTitle = findViewById(R.id.debugSectionTitle)
+        debugCard = findViewById(R.id.debugCard)
 
         applyStatusBarInset()
         bindActions()
@@ -100,6 +124,14 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.keyboardRow).setOnClickListener {
             showKeyboardLayoutDialog()
+        }
+
+        findViewById<View>(R.id.importLayoutPackRow).setOnClickListener {
+            launchLayoutPackImportPicker()
+        }
+
+        deleteLayoutPackRow.setOnClickListener {
+            showDeleteLayoutPackDialog()
         }
 
         findViewById<View>(R.id.numberRowSettingRow).setOnClickListener {
@@ -143,7 +175,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         leftKeyModesRow.setOnClickListener {
-            if (KeyboardModeSettings.loadLayoutMode(this).isGboard()) {
+            if (LayoutPackManager.resolveActive(this).isGboardStyle()) {
                 Toast.makeText(this, "Tool slots are managed by Gboard layout", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -151,7 +183,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         rightKeyModesRow.setOnClickListener {
-            if (KeyboardModeSettings.loadLayoutMode(this).isGboard()) {
+            if (LayoutPackManager.resolveActive(this).isGboardStyle()) {
                 Toast.makeText(this, "Tool slots are managed by Gboard layout", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -177,33 +209,128 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.authorRow).setOnClickListener {
             openLink("https://github.com/MathieuDvv")
         }
+
+        val debugDownloadRow = findViewById<View>(R.id.debugDownloadLayoutPackRow)
+        if (BuildConfig.DEBUG) {
+            debugSectionTitle.visibility = View.VISIBLE
+            debugCard.visibility = View.VISIBLE
+            debugDownloadRow.setOnClickListener {
+                requestDebugPackDownload()
+            }
+        } else {
+            debugSectionTitle.visibility = View.GONE
+            debugCard.visibility = View.GONE
+        }
     }
 
     private fun showKeyboardLayoutDialog() {
-        val current = KeyboardModeSettings.loadLayoutMode(this)
-        val options = arrayOf("AZERTY", "QWERTY", "Gboard AZERTY", "Gboard QWERTY")
-        val selected = when (current) {
-            KeyboardLayoutMode.AZERTY -> 0
-            KeyboardLayoutMode.QWERTY -> 1
-            KeyboardLayoutMode.GBOARD_AZERTY -> 2
-            KeyboardLayoutMode.GBOARD_QWERTY -> 3
+        val installed = LayoutPackManager.listInstalled(this)
+        if (installed.isEmpty()) {
+            Toast.makeText(this, "No layout packs found", Toast.LENGTH_SHORT).show()
+            return
         }
+        val activePackId = KeyboardModeSettings.loadActiveLayoutPackId(this)
+        val labels = installed.map { formatLayoutPackLabel(it) }.toTypedArray()
+        val selected = installed.indexOfFirst { it.id == activePackId }.coerceAtLeast(0)
 
         AlertDialog.Builder(this)
             .setTitle("Keyboard layout")
-            .setSingleChoiceItems(options, selected) { dialog, which ->
-                val mode = when (which) {
-                    1 -> KeyboardLayoutMode.QWERTY
-                    2 -> KeyboardLayoutMode.GBOARD_AZERTY
-                    3 -> KeyboardLayoutMode.GBOARD_QWERTY
-                    else -> KeyboardLayoutMode.AZERTY
-                }
-                KeyboardModeSettings.saveLayoutMode(this, mode)
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                val selectedPack = installed[which]
+                LayoutPackManager.setActive(this, selectedPack.id)
                 refreshValues()
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun showDeleteLayoutPackDialog() {
+        val imported = LayoutPackManager.listImported(this)
+        if (imported.isEmpty()) {
+            Toast.makeText(this, "No imported layout packs to delete", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val labels = imported.map { "${it.displayName} (${it.id})" }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Delete layout pack")
+            .setItems(labels) { _, which ->
+                val selected = imported[which]
+                AlertDialog.Builder(this)
+                    .setTitle("Delete ${selected.displayName}?")
+                    .setMessage("This removes the imported file from this device.")
+                    .setPositiveButton("Delete") { _, _ ->
+                        val deleted = LayoutPackManager.deleteImportedPack(this, selected.id)
+                        if (deleted) {
+                            refreshValues()
+                            Toast.makeText(this, "Layout pack deleted", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "Could not delete this pack", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun launchLayoutPackImportPicker() {
+        importLayoutPackLauncher.launch(arrayOf("text/xml", "application/xml", "*/*"))
+    }
+
+    private fun requestDebugPackDownload() {
+        exportDebugLayoutPackLauncher.launch(DEBUG_TEST_LAYOUT_PACK_FILE_NAME)
+    }
+
+    private fun writeDebugPackToUri(uri: Uri) {
+        val xmlBytes = runCatching {
+            assets.open(DEBUG_TEST_LAYOUT_PACK_ASSET_PATH).use { input ->
+                input.readBytes()
+            }
+        }.getOrElse {
+            Toast.makeText(this, "Could not read debug layout pack asset", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val written = runCatching {
+            contentResolver.openOutputStream(uri)?.use { output ->
+                output.write(xmlBytes)
+                output.flush()
+            } != null
+        }.getOrDefault(false)
+
+        if (written) {
+            Toast.makeText(this, "Debug layout pack saved", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Could not save debug layout pack", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun importLayoutPackFromUri(uri: Uri) {
+        val imported = runCatching {
+            LayoutPackManager.importFromUri(this, uri)
+        }.getOrElse { error ->
+            val message = error.message?.takeIf { it.isNotBlank() } ?: "Invalid layout file"
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        LayoutPackManager.setActive(this, imported.id)
+        refreshValues()
+        Toast.makeText(this, "Imported: ${imported.displayName}", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun formatLayoutPackLabel(pack: LayoutPack): String {
+        val sourceLabel = if (pack.source == LayoutPackSource.BUILTIN) "Built-in" else "Imported"
+        val bottomLabel = if (pack.isGboardStyle()) "Gboard" else "Classic"
+        return "${pack.displayName} ($bottomLabel, $sourceLabel)"
+    }
+
+    private fun keyboardSummary(pack: LayoutPack): String {
+        val bottom = if (pack.isGboardStyle()) "Gboard" else "Classic"
+        return "${pack.displayName} • $bottom"
     }
 
     private fun showLanguageDialog() {
@@ -462,8 +589,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshValues() {
-        val layoutMode = KeyboardModeSettings.loadLayoutMode(this)
-        val isGboardLayout = layoutMode.isGboard()
+        val activeLayoutPack = LayoutPackManager.resolveActive(this)
+        val isGboardLayout = activeLayoutPack.isGboardStyle()
         statusText.text = maskApiKeyForDisplay(KeyboardModeSettings.loadGeminiApiKey(this))
         languageValue.text = when (KeyboardModeSettings.loadLanguageMode(this)) {
             KeyboardLanguageMode.FRENCH -> "French"
@@ -471,11 +598,12 @@ class MainActivity : AppCompatActivity() {
             KeyboardLanguageMode.BOTH -> "French + English"
             KeyboardLanguageMode.DISABLED -> "Disabled"
         }
-        keyboardValue.text = when (layoutMode) {
-            KeyboardLayoutMode.AZERTY -> "AZERTY"
-            KeyboardLayoutMode.QWERTY -> "QWERTY"
-            KeyboardLayoutMode.GBOARD_AZERTY -> "Gboard AZERTY"
-            KeyboardLayoutMode.GBOARD_QWERTY -> "Gboard QWERTY"
+        keyboardValue.text = keyboardSummary(activeLayoutPack)
+        val hasImportedActiveLayout = activeLayoutPack.source == LayoutPackSource.IMPORTED
+        uploadedLayoutNoticeCard.visibility = if (hasImportedActiveLayout) View.VISIBLE else View.GONE
+        if (hasImportedActiveLayout) {
+            uploadedLayoutNoticeText.text =
+                "Custom layout active (${activeLayoutPack.displayName}). Word prediction and autocorrect still use English/French only; only the layout changed."
         }
         numberRowSettingValue.text = if (KeyboardModeSettings.loadNumberRowEnabled(this)) {
             "Enabled"
@@ -523,6 +651,10 @@ class MainActivity : AppCompatActivity() {
             "Disabled"
         }
         val (leftOptions, rightOptions) = KeyboardModeSettings.loadBottomSlotOptions(this)
+        val importedCount = LayoutPackManager.listImported(this).size
+        deleteLayoutPackValue.text = if (importedCount <= 0) "None" else "$importedCount imported"
+        deleteLayoutPackRow.isEnabled = importedCount > 0
+        deleteLayoutPackRow.alpha = if (importedCount > 0) 1f else 0.5f
         leftKeyModesValue.text = if (isGboardLayout) {
             "Single key (hold AI for AI/Clipboard/Emoji)"
         } else {
@@ -644,6 +776,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_RECORD_AUDIO_PERMISSION = 1004
+        private const val DEBUG_TEST_LAYOUT_PACK_ASSET_PATH = "layout_packs/debug_test_pack.xml"
+        private const val DEBUG_TEST_LAYOUT_PACK_FILE_NAME = "nboard_debug_layout_pack.xml"
     }
 }
 

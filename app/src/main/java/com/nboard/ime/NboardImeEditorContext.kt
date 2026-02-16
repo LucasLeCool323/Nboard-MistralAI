@@ -25,9 +25,9 @@ internal fun NboardImeService.sendOrEnter() {
     }
 }
 
-internal fun NboardImeService.isQwertyLayoutActive(): Boolean = keyboardLayoutMode.isQwerty()
+internal fun NboardImeService.isQwertyLayoutActive(): Boolean = activeLayoutPack.isQwertyLike
 
-internal fun NboardImeService.isGboardLayoutActive(): Boolean = keyboardLayoutMode.isGboard()
+internal fun NboardImeService.isGboardLayoutActive(): Boolean = activeLayoutPack.isGboardStyle()
 
 internal fun NboardImeService.resolveLeadingPunctuationLabel(): String {
     val info = currentInputEditorInfo ?: return ","
@@ -115,4 +115,3 @@ internal fun NboardImeService.isPasswordInputType(inputType: Int): Boolean {
 
     return textPassword || numberPassword
 }
-

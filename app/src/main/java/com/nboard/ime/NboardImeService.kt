@@ -158,7 +158,7 @@ class NboardImeService : InputMethodService() {
     internal var rightBottomMode = BottomKeyMode.CLIPBOARD
     internal var leftBottomModeOptions = listOf(BottomKeyMode.AI, BottomKeyMode.EMOJI)
     internal var rightBottomModeOptions = listOf(BottomKeyMode.CLIPBOARD, BottomKeyMode.EMOJI)
-    internal var keyboardLayoutMode = KeyboardLayoutMode.AZERTY
+    internal var activeLayoutPack = LayoutPackManager.defaultPack()
     internal var keyboardLanguageMode = KeyboardLanguageMode.FRENCH
     private var keyboardFontMode = KeyboardFontMode.INTER
     private var appThemeMode = AppThemeMode.SYSTEM
@@ -376,7 +376,7 @@ class NboardImeService : InputMethodService() {
 
     private fun reloadTypingSettings() {
         appThemeMode = KeyboardModeSettings.loadThemeMode(this)
-        keyboardLayoutMode = KeyboardModeSettings.loadLayoutMode(this)
+        activeLayoutPack = LayoutPackManager.resolveActive(this)
         keyboardLanguageMode = KeyboardModeSettings.loadLanguageMode(this)
         if (::autoCorrectEngine.isInitialized) {
             autoCorrectEngine.setModeFromKeyboardMode(keyboardLanguageMode)
@@ -975,18 +975,9 @@ class NboardImeService : InputMethodService() {
             return
         }
 
-        val alphaRow1 = if (isQwertyLayoutActive()) QWERTY_ROW_1 else AZERTY_ROW_1
-        val alphaRow2 = when {
-            isGboardLayoutActive() && isQwertyLayoutActive() -> GBOARD_QWERTY_ROW_2
-            isQwertyLayoutActive() -> QWERTY_ROW_2
-            else -> AZERTY_ROW_2
-        }
-        val alphaRow3 = when {
-            isGboardLayoutActive() && isQwertyLayoutActive() -> GBOARD_QWERTY_ROW_3
-            isGboardLayoutActive() -> GBOARD_AZERTY_ROW_3
-            isQwertyLayoutActive() -> QWERTY_ROW_3
-            else -> AZERTY_ROW_3
-        }
+        val alphaRow1 = activeLayoutPack.row1
+        val alphaRow2 = activeLayoutPack.row2
+        val alphaRow3 = activeLayoutPack.row3
         val alphaRow3Weight = if (isQwertyLayoutActive()) 0.875f else 1f
 
         val topNumberVariants = if (isNumberRowEnabled) {

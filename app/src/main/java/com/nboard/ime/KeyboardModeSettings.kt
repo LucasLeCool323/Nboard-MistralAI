@@ -51,6 +51,7 @@ object KeyboardModeSettings {
     private const val KEY_RIGHT_OPTION_PRIMARY = "right_bottom_option_primary"
     private const val KEY_RIGHT_OPTION_SECONDARY = "right_bottom_option_secondary"
     private const val KEY_LAYOUT_MODE = "keyboard_layout_mode"
+    private const val KEY_ACTIVE_LAYOUT_PACK_ID = "active_layout_pack_id"
     private const val KEY_LANGUAGE_MODE = "keyboard_language_mode"
     private const val KEY_API_KEY = "gemini_api_key"
     private const val KEY_THEME_MODE = "theme_mode"
@@ -151,6 +152,23 @@ object KeyboardModeSettings {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_LAYOUT_MODE, mode.value)
+            .putString(KEY_ACTIVE_LAYOUT_PACK_ID, LayoutPackManager.defaultPackIdForLegacyMode(mode))
+            .apply()
+    }
+
+    fun loadActiveLayoutPackId(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val explicit = prefs.getString(KEY_ACTIVE_LAYOUT_PACK_ID, null)?.trim().orEmpty()
+        if (explicit.isNotBlank()) {
+            return explicit
+        }
+        return LayoutPackManager.defaultPackIdForLegacyMode(loadLayoutMode(context))
+    }
+
+    fun saveActiveLayoutPackId(context: Context, packId: String) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_ACTIVE_LAYOUT_PACK_ID, packId.trim())
             .apply()
     }
 
