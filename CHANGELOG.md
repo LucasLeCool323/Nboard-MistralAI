@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.4.0] - 2026-02-16
+
+### Added
+
+- Added community layout pack support through local XML import in settings.
+- Added optional per-key long-press variant configuration in layout XML (`<variants><key value="...">...</key></variants>`).
+- Added a reusable `layout_template.xml` at the project root for easier community layout creation.
+- Added `Community Layouts/` folder and contribution guidance for submitting layout files via PR.
+- Added an AMOLED Black built-in theme mode.
+
+### Changed
+
+- Renamed built-in layout labels to: `Azerty (legacy)`, `Azerty (gboard)`, `Qwerty (legacy)`, `Qwerty (gboard)`.
+- Removed the debug-only layout export option from settings.
+- Refined docs for layout packs across README, docs example, and contributing guidelines.
+- Updated app-wide theming to use theme tokens/attributes so AMOLED and future themes apply consistently across settings, onboarding, and keyboard UI.
+
+### Notes
+
+- With this implementation, major feature updates are expected to slow down. Next releases will primarily focus on maintenance and bug fixing while development attention shifts to other projects.
+
 ## [1.3.0] - 2026-02-15
 
 ### Added
