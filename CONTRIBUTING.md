@@ -33,7 +33,7 @@ The following feature PRs will be closed as they won't be implemented (FORK inst
 
 - Keyboard size or height customization
 - One-handed mode
-- Custom themes beyond light/dark/system
+- Custom themes beyond built-in options
 - Floating keyboard mode
 - Advanced customization options (key borders, corner radius, custom colors, etc.)
 - Cloud features (sync, backup, import/export)
@@ -45,8 +45,7 @@ Those features could be implemented but are not planned:
 
 You can open PRs for these features:
 
-- Additional keyboard layouts beyond AZERTY/QWERTY
-- Additional languages beyond French/English (via complete language implementation - see below)
+- Additional keyboard layouts beyond the built-ins
 
 ### Want These Features?
 
@@ -54,44 +53,56 @@ Nboard is open source (AGPL-3.0). You're welcome to fork the repository and add 
 
 If you create a compelling fork with features others want, you can maintain and distribute it yourself.
 
-## Adding a New Language
+## Custom Layout XML (No Fork Needed)
 
-Adding a language requires a complete implementation to be accepted. This is significant work (typically 10-20+ hours).
+You can create and share custom keyboard layouts as XML files and import them directly in app settings.
 
-A complete language contribution must include:
+Use [`layout_template.xml`](layout_template.xml) as your starting point.
 
-### Required Components
+### How to create a layout pack
 
-1. **Keyboard Layout** - Layout file with correct character positions and language-specific characters
-2. **Word Dictionary** - Minimum 10,000 most common words with frequency data (UTF-8 encoding)
-3. **Bigram Dictionary** - Minimum 50,000 word pairs with frequency data for context-aware predictions
-4. **Language Detection** - Indicators added to `SmartTypingBehavior.kt` for bilingual context switching
-5. **RTL Support** - If applicable (Arabic, Hebrew, Persian, etc.)
-6. **Tests** - Unit tests for dictionary loading, autocorrect accuracy, and predictions
-7. **Documentation** - README updates, source attribution, screenshots
+1. Copy `layout_template.xml` and rename it (for example `my_language.xml`)
+2. Set a unique `id` (do not use built-in IDs like `builtin.*`)
+3. Set a `name` shown in the layout picker
+4. Choose `bottomStyle`:
+   - `classic` for legacy bottom row behavior
+   - `gboard` for Gboard-style bottom row behavior
+5. Fill `row1`, `row2`, `row3` with space-separated keys
+6. (Optional) Define custom long-press variants:
+   - `<variants><key value="a">à á â</key></variants>`
+   - Use `value` (or `base`) to target the key
+   - Separate options with spaces
+7. Keep each row between 5 and 12 keys, each token up to 4 characters
+8. Keep variant base keys and variant tokens up to 4 characters
+9. Save as UTF-8 `.xml`
+10. Import from app settings: `Layout packs` -> `Import layout pack`
 
-### Dictionary Sources
+### Share your layout in this repo
 
-Dictionaries must be license-compatible (CC-BY, CC0, Public Domain, MIT, etc.) and properly attributed.
+Don't hesitate to open a PR adding your layout XML to [`Community Layouts/`](Community%20Layouts/).
 
-Recommended sources:
-- Wiktionary frequency lists
-- OpenSubtitles word frequencies
-- Wikipedia dumps
-- Google Books N-grams
-- hermitdave/FrequencyWords on GitHub
-- rspeer/wordfreq
+- Use lowercase kebab-case filenames
+- Preferred format: `<language>-<layout>-<style>.xml`
+- Example: `french-azerty-gboard.xml`
 
-Include a `SOURCES.md` file documenting your dictionary sources with name, license, and URL.
+### What layout XML changes
 
-### Before Starting
+- Key positions and displayed characters
+- Whether the layout behaves as qwerty-like (`qwertyLike`)
+- Bottom row style (`classic` or `gboard`)
+- Long-press variants per key (`variants`)
 
-Open an issue first to:
-1. Confirm you understand the requirements
-2. Get feedback on your planned dictionary sources
-3. Discuss any language-specific considerations
+### What layout XML does not change
 
-Incomplete language PRs (e.g., just a layout without dictionaries) will be closed with a request to complete the missing requirements.
+- Autocorrect dictionaries
+- Word prediction dictionaries and n-grams
+- Voice model/language packs
+
+Those parts are still limited to the core app behavior (French/English in upstream Nboard).
+
+## Full Language Support
+
+If you want a full language implementation (layout + autocorrect + prediction + voice), you'll need to maintain your own version of Nboard.
 
 ## Code Style
 
@@ -111,7 +122,7 @@ If you're planning to work on a significant contribution:
 ## Review Process
 
 - Bug fixes: Usually reviewed within a few days
-- Language additions: May take longer due to thorough testing requirements
+- Layout pack and documentation updates: Usually reviewed quickly
 - Other features: Will be evaluated based on project scope alignment
 
 Thank you for contributing to Nboard.

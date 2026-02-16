@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nboard layout pack template
+
+  Rules:
+  - Root tag must be <layout-pack>
+  - Required attributes: id
+  - Optional attributes: name, bottomStyle (classic|gboard), qwertyLike (true|false)
+  - Optional variants block:
+    <variants>
+      <key value="a">à á â ä</key>
+    </variants>
+  - Required tags: <row1>, <row2>, <row3>
+  - Each row must contain 5 to 12 keys
+  - Each key token must be 1 to 4 characters
+  - Variant base key and variant tokens must be 1 to 4 characters
+  - Use spaces between keys
+-->
+<layout-pack
+    id="community.example.layout"
+    name="Example Layout"
+    bottomStyle="classic"
+    qwertyLike="false">
+
+    <row1>a z e r t y u i o p</row1>
+    <row2>q s d f g h j k l m</row2>
+    <row3>w x c v b n ' .</row3>
+
+    <!-- Optional per-key long-press variants -->
+    <variants>
+        <key value="a">à á â ä</key>
+        <key value="e">é è ê ë</key>
+        <key value="c">ç</key>
+        <key value="'">’ ` ´</key>
+    </variants>
+</layout-pack>

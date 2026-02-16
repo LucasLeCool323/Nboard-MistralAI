@@ -1150,12 +1150,14 @@ class NboardImeService : InputMethodService() {
         forcedVariant: String? = null
     ): ((View, Float, Float) -> Unit)? {
         val key = original.lowercase(Locale.US)
+        val layoutVariants = activeLayoutPack.variants[key]
         val variants = linkedSetOf<String>()
         val allowForcedDigitVariant = !KeyboardModeSettings.loadNumberRowEnabled(this)
         if (allowForcedDigitVariant) {
             forcedVariant?.let { variants.add(it) }
         }
-        VARIANT_MAP[key]?.forEach { variants.add(it) }
+        val sourceVariants = layoutVariants ?: VARIANT_MAP[key].orEmpty()
+        sourceVariants.forEach { variants.add(it) }
         if (variants.isEmpty()) {
             return null
         }

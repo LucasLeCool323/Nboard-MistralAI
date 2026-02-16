@@ -44,19 +44,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var deleteLayoutPackValue: TextView
     private lateinit var themeValue: TextView
     private lateinit var fontValue: TextView
-    private lateinit var debugSectionTitle: View
-    private lateinit var debugCard: View
     private val importLayoutPackLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
             importLayoutPackFromUri(uri)
         }
     }
-    private val exportDebugLayoutPackLauncher =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("text/xml")) { uri ->
-            if (uri != null) {
-                writeDebugPackToUri(uri)
-            }
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val themeMode = KeyboardModeSettings.loadThemeMode(this)
@@ -88,8 +80,6 @@ class MainActivity : AppCompatActivity() {
         deleteLayoutPackValue = findViewById(R.id.deleteLayoutPackValue)
         themeValue = findViewById(R.id.themeValue)
         fontValue = findViewById(R.id.fontValue)
-        debugSectionTitle = findViewById(R.id.debugSectionTitle)
-        debugCard = findViewById(R.id.debugCard)
 
         applyStatusBarInset()
         bindActions()
@@ -211,18 +201,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.authorRow).setOnClickListener {
             openLink("https://github.com/MathieuDvv")
         }
-
-        val debugDownloadRow = findViewById<View>(R.id.debugDownloadLayoutPackRow)
-        if (BuildConfig.DEBUG) {
-            debugSectionTitle.visibility = View.VISIBLE
-            debugCard.visibility = View.VISIBLE
-            debugDownloadRow.setOnClickListener {
-                requestDebugPackDownload()
-            }
-        } else {
-            debugSectionTitle.visibility = View.GONE
-            debugCard.visibility = View.GONE
-        }
     }
 
     private fun showKeyboardLayoutDialog() {
@@ -280,34 +258,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun launchLayoutPackImportPicker() {
         importLayoutPackLauncher.launch(arrayOf("text/xml", "application/xml", "*/*"))
-    }
-
-    private fun requestDebugPackDownload() {
-        exportDebugLayoutPackLauncher.launch(DEBUG_TEST_LAYOUT_PACK_FILE_NAME)
-    }
-
-    private fun writeDebugPackToUri(uri: Uri) {
-        val xmlBytes = runCatching {
-            assets.open(DEBUG_TEST_LAYOUT_PACK_ASSET_PATH).use { input ->
-                input.readBytes()
-            }
-        }.getOrElse {
-            Toast.makeText(this, "Could not read debug layout pack asset", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        val written = runCatching {
-            contentResolver.openOutputStream(uri)?.use { output ->
-                output.write(xmlBytes)
-                output.flush()
-            } != null
-        }.getOrDefault(false)
-
-        if (written) {
-            Toast.makeText(this, "Debug layout pack saved", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Could not save debug layout pack", Toast.LENGTH_LONG).show()
-        }
     }
 
     private fun importLayoutPackFromUri(uri: Uri) {
@@ -786,8 +736,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_RECORD_AUDIO_PERMISSION = 1004
-        private const val DEBUG_TEST_LAYOUT_PACK_ASSET_PATH = "layout_packs/debug_test_pack.xml"
-        private const val DEBUG_TEST_LAYOUT_PACK_FILE_NAME = "nboard_debug_layout_pack.xml"
     }
 }
 

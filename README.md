@@ -91,11 +91,18 @@ Expected XML shape:
   <row1>q w e r t y u i o p</row1>
   <row2>a s d f g h j k l</row2>
   <row3>z x c v b n m , '</row3>
+  <variants>
+    <key value="a">á à â ä</key>
+    <key value="e">é è ê ë</key>
+    <key value="'">’ ` ´</key>
+  </variants>
 </layout-pack>
 ```
 
 - `bottomStyle`: `classic` or `gboard`
 - `qwertyLike`: `true` or `false` (controls row shaping behavior)
+- `variants` (optional): custom long-press options per key
+- Variant format: `<key value="base">option1 option2 ...</key>`
 
 Reference file: [`docs/layout-pack-example.xml`](docs/layout-pack-example.xml)
 

@@ -112,6 +112,46 @@ class LayoutPackManagerTest {
     }
 
     @Test
+    fun parseLayoutPackXml_withVariants_parsesVariantMappings() {
+        val xml = """
+            <layout-pack id="community.with.variants" name="With variants">
+                <row1>a z e r t y u i o p</row1>
+                <row2>q s d f g h j k l m</row2>
+                <row3>w x c v b n ' .</row3>
+                <variants>
+                    <key value="a">à á â</key>
+                    <key value="e">é è ê</key>
+                    <key value="'">’ `</key>
+                </variants>
+            </layout-pack>
+        """.trimIndent()
+
+        val pack = LayoutPackManager.parseLayoutPackXmlForTest(xml)
+
+        assertEquals(listOf("à", "á", "â"), pack.variants["a"])
+        assertEquals(listOf("é", "è", "ê"), pack.variants["e"])
+        assertEquals(listOf("’", "`"), pack.variants["'"])
+    }
+
+    @Test
+    fun parseLayoutPackXml_variantWithoutBase_throwsValidationError() {
+        val xml = """
+            <layout-pack id="community.invalid.variant" name="Invalid variant">
+                <row1>a z e r t y u i o p</row1>
+                <row2>q s d f g h j k l m</row2>
+                <row3>w x c v b n ' .</row3>
+                <variants>
+                    <key>à á â</key>
+                </variants>
+            </layout-pack>
+        """.trimIndent()
+
+        val error = expectParseError(xml)
+
+        assertTrue(error.message.orEmpty().contains("<key> in <variants> must define 'value'"))
+    }
+
+    @Test
     fun parseLayoutPackXml_tooFewKeys_throwsValidationError() {
         val xml = """
             <layout-pack id="community.too.few" name="Too few keys">

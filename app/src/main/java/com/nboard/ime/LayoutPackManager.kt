@@ -36,7 +36,8 @@ data class LayoutPack(
     val row3: List<String>,
     val isQwertyLike: Boolean,
     val bottomStyle: LayoutBottomStyle,
-    val source: LayoutPackSource
+    val source: LayoutPackSource,
+    val variants: Map<String, List<String>> = emptyMap()
 ) {
     fun isGboardStyle(): Boolean = bottomStyle == LayoutBottomStyle.GBOARD
 }
@@ -54,7 +55,7 @@ object LayoutPackManager {
     private val builtinPacks = listOf(
         LayoutPack(
             id = BUILTIN_AZERTY_CLASSIC_ID,
-            displayName = "AZERTY (Classic)",
+            displayName = "Azerty (legacy)",
             row1 = AZERTY_ROW_1,
             row2 = AZERTY_ROW_2,
             row3 = AZERTY_ROW_3,
@@ -64,7 +65,7 @@ object LayoutPackManager {
         ),
         LayoutPack(
             id = BUILTIN_AZERTY_GBOARD_ID,
-            displayName = "AZERTY (Gboard)",
+            displayName = "Azerty (gboard)",
             row1 = AZERTY_ROW_1,
             row2 = AZERTY_ROW_2,
             row3 = GBOARD_AZERTY_ROW_3,
@@ -74,7 +75,7 @@ object LayoutPackManager {
         ),
         LayoutPack(
             id = BUILTIN_QWERTY_CLASSIC_ID,
-            displayName = "QWERTY (Classic)",
+            displayName = "Qwerty (legacy)",
             row1 = QWERTY_ROW_1,
             row2 = QWERTY_ROW_2,
             row3 = QWERTY_ROW_3,
@@ -84,7 +85,7 @@ object LayoutPackManager {
         ),
         LayoutPack(
             id = BUILTIN_QWERTY_GBOARD_ID,
-            displayName = "QWERTY (Gboard)",
+            displayName = "Qwerty (gboard)",
             row1 = QWERTY_ROW_1,
             row2 = GBOARD_QWERTY_ROW_2,
             row3 = GBOARD_QWERTY_ROW_3,
@@ -269,6 +270,7 @@ object LayoutPackManager {
         val row1 = readRowTokens(root, "row1")
         val row2 = readRowTokens(root, "row2")
         val row3 = readRowTokens(root, "row3")
+        val variants = readVariants(root)
 
         val parsedRow1 = row1 ?: throw LayoutPackParseException("Missing <row1>")
         val parsedRow2 = row2 ?: throw LayoutPackParseException("Missing <row2>")
@@ -290,7 +292,8 @@ object LayoutPackManager {
             row3 = parsedRow3,
             isQwertyLike = isQwertyLike,
             bottomStyle = bottomStyle,
-            source = source
+            source = source,
+            variants = variants
         )
     }
 
@@ -357,6 +360,56 @@ object LayoutPackManager {
             .split(Regex("\\s+"))
             .map { it.trim() }
             .filter { it.isNotBlank() }
+    }
+
+    private fun readVariants(root: Element): Map<String, List<String>> {
+        val variantsNodes = root.getElementsByTagName("variants")
+        if (variantsNodes.length <= 0) {
+            return emptyMap()
+        }
+        val variantsElement = variantsNodes.item(0) as? Element ?: return emptyMap()
+        val keyNodes = variantsElement.getElementsByTagName("key")
+        if (keyNodes.length <= 0) {
+            return emptyMap()
+        }
+
+        val result = linkedMapOf<String, MutableList<String>>()
+        for (index in 0 until keyNodes.length) {
+            val keyElement = keyNodes.item(index) as? Element ?: continue
+            val baseRaw = keyElement
+                .getAttribute("value")
+                .ifBlank { keyElement.getAttribute("base") }
+                .trim()
+            if (baseRaw.isBlank()) {
+                throw LayoutPackParseException("<key> in <variants> must define 'value'")
+            }
+            if (baseRaw.length > 4) {
+                throw LayoutPackParseException("Variant base key '$baseRaw' is too long")
+            }
+
+            val tokens = keyElement.textContent
+                .trim()
+                .split(Regex("\\s+"))
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+            if (tokens.isEmpty()) {
+                throw LayoutPackParseException("Variant key '$baseRaw' must define at least one token")
+            }
+            val invalid = tokens.firstOrNull { token -> token.length > 4 }
+            if (invalid != null) {
+                throw LayoutPackParseException("Variant key '$baseRaw' has invalid token '$invalid'")
+            }
+
+            val normalizedBase = baseRaw.lowercase(Locale.US)
+            val merged = result.getOrPut(normalizedBase) { mutableListOf() }
+            tokens.forEach { token ->
+                if (!merged.contains(token)) {
+                    merged.add(token)
+                }
+            }
+        }
+
+        return result.mapValues { it.value.toList() }
     }
 
     private fun validateRow(row: List<String>, rowName: String) {
