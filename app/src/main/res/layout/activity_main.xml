@@ -278,6 +278,41 @@
                 android:alpha="0.2"
                 android:background="?android:attr/textColorPrimary" />
 
+            <!-- More layout here link -->
+            <LinearLayout
+                android:id="@+id/moreLayoutsRow"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_external_link_lucide"
+                    android:tint="?android:attr/textColorPrimary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_variable"
+                    android:text="More layout here"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:alpha="0.2"
+                android:background="?android:attr/textColorPrimary" />
+
             <LinearLayout
                 android:id="@+id/importLayoutPackRow"
                 android:layout_width="match_parent"

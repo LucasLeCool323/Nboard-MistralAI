@@ -118,6 +118,10 @@ class MainActivity : AppCompatActivity() {
             showKeyboardLayoutDialog()
         }
 
+        findViewById<View>(R.id.moreLayoutsRow).setOnClickListener {
+            openLink("https://github.com/MathieuDvv/Nboard/tree/main/Community%20Layouts")
+        }
+
         findViewById<View>(R.id.importLayoutPackRow).setOnClickListener {
             launchLayoutPackImportPicker()
         }
