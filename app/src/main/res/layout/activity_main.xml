@@ -285,26 +285,26 @@
                 android:layout_height="60dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="24dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_external_link_lucide"
-                    android:tint="?android:attr/textColorPrimary" />
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/inter_variable"
                     android:text="More layout here"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textSize="15sp" />
+
+                <ImageView
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_external_link_lucide"
+                    android:tint="?android:attr/textColorPrimary" />
             </LinearLayout>
 
             <View
