@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout-pack
+    id="community.hindi.inscript"
+    name="Hindi Inscript (AI Generated)"
+    bottomStyle="classic"
+    qwertyLike="false">
+
+    <row1>ौ ै ा ी ू ब ह ग द ज ड</row1>
+    <row2>ो े ् ि ु प र क त च ट</row2>
+    <row3>ॉ ृ ़ ॐ ं म न व ल स य</row3>
+
+    <variants>
+        <key value="ौ">औ</key>
+        <key value="ै">ऐ</key>
+        <key value="ा">आ</key>
+        <key value="ी">ई</key>
+        <key value="ू">ऊ</key>
+        <key value="ब">भ</key>
+        <key value="ग">घ</key>
+        <key value="द">ध</key>
+        <key value="ज">झ</key>
+        <key value="ड">ढ</key>
+        <key value="ो">ओ</key>
+        <key value="े">ए</key>
+        <key value="ि">इ</key>
+        <key value="ु">उ</key>
+        <key value="प">फ</key>
+        <key value="र">ऱ</key>
+        <key value="क">ख</key>
+        <key value="त">थ</key>
+        <key value="च">छ</key>
+        <key value="ट">ठ</key>
+        <key value="म">ँ</key>
+        <key value="न">ण ञ ङ</key>
+        <key value="स">श ष</key>
+    </variants>
+</layout-pack>

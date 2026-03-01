@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout-pack
+    id="community.arabic.pro"
+    name="Arabic Pro Tashkeel"
+    bottomStyle="classic"
+    qwertyLike="false">
+
+    <row1>ض ص ث ق ف غ ع ه خ ح ج د</row1>
+    <row2>ش س ي ب ل ا ت ن م ك ط</row2>
+    <row3>ذ ؤ ر لا ى ة و ز ظ .</row3>
+
+    <variants>
+        <key value=".">؟ ، َ ً ُ ٌ ِ ٍ ْ ّ</key>
+
+        <key value="ا">أ إ آ ء</key>
+        <key value="و">ؤ</key>
+        <key value="ي">ئ</key>
+        <key value="ة">ه</key>
+    </variants>
+</layout-pack>

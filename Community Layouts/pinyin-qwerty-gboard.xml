@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout-pack
+    id="community.pinyin.qwerty"
+    name="Pinyin QWERTY (AI Generated)"
+    bottomStyle="gboard"
+    qwertyLike="true">
+
+    <row1>q w e r t y u i o p</row1>
+    <row2>a s d f g h j k l</row2>
+    <row3>z x c v b n m , '</row3>
+
+    <variants>
+        <key value="a">ā á ǎ à a</key>
+        <key value="e">ē é ě è e</key>
+        <key value="i">ī í ǐ ì i</key>
+        <key value="o">ō ó ǒ ò o</key>
+        <key value="u">ū ú ǔ ù u ǖ ǘ ǚ ǜ ü</key>
+        <key value="v">ǖ ǘ ǚ ǜ ü v</key>
+        <key value="'">’ ` ´</key>
+    </variants>
+</layout-pack>

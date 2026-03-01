@@ -104,7 +104,9 @@ Expected XML shape:
 - `variants` (optional): custom long-press options per key
 - Variant format: `<key value="base">option1 option2 ...</key>`
 
-Reference file: [`docs/layout-pack-example.xml`](docs/layout-pack-example.xml)
+Reference file: [`Community Layouts/layout_template.xml`](Community Layouts/layout_template.xml)
+
+In the `Community Layouts/` folder, you will also find layouts contributed by the community (e.g., Arabic, German), as well as AI-generated layouts provided as examples (e.g., Hindi Inscript, Pinyin QWERTY).
 
 ## How Autocorrect and Prediction Work
 
