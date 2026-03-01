@@ -23,8 +23,8 @@ android {
         applicationId = "com.nboard.ime"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.4.0 : Introducing Community layouts"
+        versionCode = 7
+        versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GEMINI_API_KEY", "\"${localProperty("GEMINI_API_KEY")}\"")

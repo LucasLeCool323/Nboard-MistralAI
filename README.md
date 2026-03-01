@@ -1,6 +1,6 @@
 # Nboard
 
-![Version](https://img.shields.io/badge/version-1.4.0-yellow)
+![Version](https://img.shields.io/badge/version-1.4.1-yellow)
 ![Android](https://img.shields.io/badge/android-8.0%2B%20(API%2026)-grey)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-lightgrey)
 
@@ -30,7 +30,7 @@ Built for Nothing Phone users who wanted a keyboard matching their device's mini
 
 ## Project Status
 
-Nboard is **feature-complete** and in maintenance mode after v1.4.0.
+Nboard is **feature-complete** and in maintenance mode after v1.4.1.
 
 I built this keyboard to solve my own problem: wanting a Nothing-inspired keyboard with AI tools. It works great, and I use it daily.
 
@@ -153,7 +153,7 @@ If you want to support Nboard development:
 3. Install on device:
 
 ```bash
-adb install -r path/to/NBoard-v1.4.0-release.apk
+adb install -r path/to/NBoard-v1.4.1-release.apk
 ```
 
 4. On Android, enable **Nboard** in keyboard settings.

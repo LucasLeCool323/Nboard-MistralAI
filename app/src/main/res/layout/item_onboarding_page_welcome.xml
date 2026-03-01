@@ -9,20 +9,12 @@
     android:paddingEnd="20dp"
     android:paddingBottom="8dp">
 
-    <FrameLayout
+    <ImageView
         android:layout_width="108dp"
         android:layout_height="108dp"
         android:layout_marginTop="12dp"
-        android:background="@drawable/bg_onboarding_icon"
-        android:padding="30dp">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_ai_custom"
-            android:tint="@color/ai_text" />
-    </FrameLayout>
+        android:contentDescription="@null"
+        android:src="@drawable/ic_nboard_yellow" />
 
     <TextView
         android:layout_width="wrap_content"
