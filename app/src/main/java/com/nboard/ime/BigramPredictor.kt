@@ -484,7 +484,14 @@ class BigramPredictor(
         )
 
         private fun normalizeToken(raw: String): String {
-            return raw.lowercase(Locale.US).replace('’', '\'')
+            return raw.lowercase(Locale.US)
+                .replace('’', '\'')
+                .replace('‘', '\'')
+                .replace('ʼ', '\'')
+                .replace('`', '\'')
+                .replace('´', '\'')
+                .replace('‛', '\'')
+                .replace('＇', '\'')
         }
 
         private fun normalizeFrequencyMap(source: Map<String, Long>): Map<String, Long> {

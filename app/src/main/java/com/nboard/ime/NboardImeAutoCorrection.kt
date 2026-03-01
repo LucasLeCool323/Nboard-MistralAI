@@ -7,6 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+private val FRENCH_ELISION_PREFIXES = setOf('c', 'd', 'j', 'l', 'm', 'n', 's', 't')
+
 internal fun NboardImeService.commitWordPrediction(predictedWord: String) {
     val word = predictedWord.trim()
     if (word.isBlank() || isAiMode || isClipboardOpen || isEmojiMode) {
@@ -24,8 +26,13 @@ internal fun NboardImeService.commitWordPrediction(predictedWord: String) {
     }
     val sentenceContext = extractPredictionSentenceContext(beforeCursor)
     val (previousWord2, previousWord1) = extractPreviousWordsForPrediction(sentenceContext, fragment)
-    inputConnection.commitText(word, 1)
-    inputConnection.commitText(" ", 1)
+    inputConnection.beginBatchEdit()
+    try {
+        inputConnection.commitText(word, 1)
+        inputConnection.commitText(" ", 1)
+    } finally {
+        inputConnection.endBatchEdit()
+    }
     val normalizedWord = normalizeWord(word)
     recordLearnedTransition(previousWord1, normalizedWord, boost = 3)
     recordLearnedTrigram(previousWord2, previousWord1, normalizedWord, boost = 3)
@@ -46,12 +53,19 @@ internal fun NboardImeService.tryRevertLastAutoCorrection(): Boolean {
         return false
     }
 
-    inputConnection.deleteSurroundingText(
-        correction.correctedWord.length + correction.committedSuffix.length,
-        0
-    )
-    inputConnection.commitText(correction.originalWord + correction.committedSuffix, 1)
+    inputConnection.beginBatchEdit()
+    try {
+        inputConnection.deleteSurroundingText(
+            correction.correctedWord.length + correction.committedSuffix.length,
+            0
+        )
+        inputConnection.commitText(correction.originalWord + correction.committedSuffix, 1)
+    } finally {
+        inputConnection.endBatchEdit()
+    }
     recordRejectedCorrection(correction.originalWord, correction.correctedWord)
+    incrementLearnedWord(correction.originalWord, AUTOCORRECT_REVERT_LEARN_BOOST)
+    persistPredictionLearningIfNeeded()
     pendingAutoCorrection = null
     return true
 }
@@ -149,14 +163,33 @@ internal fun NboardImeService.applyAutoCorrectionBeforeDelimiter(inputConnection
     if (normalizedSource.length < 2) {
         return null
     }
+    if (!isKnownWord(normalizedSource)) {
+        val learnedCount = learnedWordFrequency[normalizedSource] ?: 0
+        if (learnedCount >= AUTOCORRECT_LEARNED_WORD_SKIP_THRESHOLD) {
+            return null
+        }
+    }
 
-    autoCorrectEngine.setModeFromKeyboardMode(keyboardLanguageMode)
     val previousWord = extractPreviousWordForAutoCorrection(beforeCursor, sourceWord)
-    val startNanos = SystemClock.elapsedRealtimeNanos()
-    val suggestion = autoCorrectEngine.correct(normalizedSource, previousWord) ?: return null
-    val elapsedMs = (SystemClock.elapsedRealtimeNanos() - startNanos) / 1_000_000L
-    if (elapsedMs > AUTOCORRECT_SLOW_LOG_THRESHOLD_MS) {
-        Log.w(TAG, "Autocorrect took ${elapsedMs}ms for '$normalizedSource'")
+    val contextLanguage = detectContextLanguage(beforeCursor)
+    var suggestion = lookupTypoCorrection(normalizedSource, contextLanguage)
+
+    if (suggestion == null) {
+        autoCorrectEngine.setModeFromKeyboardMode(keyboardLanguageMode)
+        val startNanos = SystemClock.elapsedRealtimeNanos()
+        suggestion = autoCorrectEngine.correct(normalizedSource, previousWord)
+        val elapsedMs = (SystemClock.elapsedRealtimeNanos() - startNanos) / 1_000_000L
+        if (elapsedMs > AUTOCORRECT_SLOW_LOG_THRESHOLD_MS) {
+            Log.w(TAG, "Autocorrect took ${elapsedMs}ms for '$normalizedSource'")
+        }
+    }
+
+    if (suggestion == null && shouldRunDictionaryApostropheFallback(normalizedSource)) {
+        suggestion = findBestDictionaryCorrection(normalizedSource, contextLanguage)
+    }
+    suggestion = suggestion?.let(::normalizeWord) ?: return null
+    if (!isAutoCorrectionCandidateUsable(normalizedSource, suggestion)) {
+        return null
     }
     if (isCorrectionSuppressed(normalizedSource, suggestion)) {
         return null
@@ -173,6 +206,91 @@ internal fun NboardImeService.applyAutoCorrectionBeforeDelimiter(inputConnection
         originalWord = sourceWord,
         correctedWord = correctedWord
     )
+}
+
+internal fun NboardImeService.lookupTypoCorrection(
+    source: String,
+    contextLanguage: KeyboardLanguageMode?
+): String? {
+    val normalized = normalizeWord(source)
+    if (normalized.length < 2) {
+        return null
+    }
+
+    val orderedMaps = when (keyboardLanguageMode) {
+        KeyboardLanguageMode.FRENCH -> listOf(FRENCH_TYPOS)
+        KeyboardLanguageMode.ENGLISH -> listOf(ENGLISH_TYPOS)
+        KeyboardLanguageMode.BOTH -> when (contextLanguage) {
+            KeyboardLanguageMode.FRENCH -> listOf(FRENCH_TYPOS, ENGLISH_TYPOS)
+            KeyboardLanguageMode.ENGLISH -> listOf(ENGLISH_TYPOS, FRENCH_TYPOS)
+            else -> listOf(ENGLISH_TYPOS, FRENCH_TYPOS)
+        }
+        KeyboardLanguageMode.DISABLED -> emptyList()
+    }
+
+    orderedMaps.forEach { map ->
+        val candidate = map[normalized]?.let(::normalizeWord) ?: return@forEach
+        if (candidate.contains(' ') || candidate.length < 2) {
+            return@forEach
+        }
+        if (isKnownWord(normalized) && !shouldPreferApostropheTypoCandidate(normalized, candidate)) {
+            return@forEach
+        }
+        if (!isAutoCorrectionCandidateUsable(normalized, candidate)) {
+            return@forEach
+        }
+        if (!isCorrectionSuppressed(normalized, candidate)) {
+            return candidate
+        }
+    }
+    return null
+}
+
+internal fun NboardImeService.shouldPreferApostropheTypoCandidate(source: String, candidate: String): Boolean {
+    val normalizedSource = normalizeWord(source)
+    val normalizedCandidate = normalizeWord(candidate)
+    if ('\'' in normalizedSource || '\'' !in normalizedCandidate) {
+        return false
+    }
+    return normalizedCandidate.replace("'", "") == normalizedSource
+}
+
+internal fun NboardImeService.shouldRunDictionaryApostropheFallback(source: String): Boolean {
+    val normalized = normalizeWord(source)
+    if (normalized.length < 3) {
+        return false
+    }
+    if (normalized.contains('\'')) {
+        return true
+    }
+    if (ENGLISH_TYPOS.containsKey(normalized) || FRENCH_TYPOS.containsKey(normalized)) {
+        return true
+    }
+    if (normalized.startsWith("qu") || normalized.startsWith("jusqu")) {
+        return true
+    }
+    return normalized.firstOrNull() in FRENCH_ELISION_PREFIXES
+}
+
+internal fun NboardImeService.isAutoCorrectionCandidateUsable(source: String, candidate: String): Boolean {
+    val normalizedSource = normalizeWord(source)
+    val normalizedCandidate = normalizeWord(candidate)
+    if (normalizedCandidate.length !in 2..24) {
+        return false
+    }
+    if (!normalizedCandidate.any(Char::isLetter)) {
+        return false
+    }
+    if (!normalizedCandidate.first().isLetter() || !normalizedCandidate.last().isLetter()) {
+        return false
+    }
+    if (normalizedSource.length >= 4) {
+        val prefix = commonPrefixLength(foldWord(normalizedSource), foldWord(normalizedCandidate))
+        if (prefix == 0) {
+            return false
+        }
+    }
+    return true
 }
 
 internal fun NboardImeService.findBestDictionaryCorrection(
@@ -372,12 +490,14 @@ internal fun NboardImeService.buildAutoCorrectionVariants(source: String): List<
     val firstPass = variants.entries.map { AutoCorrectionVariant(it.key, it.value) }
     firstPass.forEach { seed ->
         expandSuffixRepairVariants(seed.word, seed.penalty, ::addVariant)
+        expandApostropheVariants(seed.word, seed.penalty, ::addVariant)
     }
 
     val secondPass = variants.entries.map { AutoCorrectionVariant(it.key, it.value) }
     secondPass.forEach { seed ->
         if (seed.penalty <= 3) {
             expandSuffixRepairVariants(seed.word, seed.penalty + 1, ::addVariant)
+            expandApostropheVariants(seed.word, seed.penalty + 1, ::addVariant)
         }
     }
 
@@ -385,6 +505,41 @@ internal fun NboardImeService.buildAutoCorrectionVariants(source: String): List<
         .sortedWith(compareBy<Map.Entry<String, Int>> { it.value }.thenBy { it.key.length })
         .take(MAX_AUTOCORRECT_VARIANTS)
         .map { AutoCorrectionVariant(it.key, it.value) }
+}
+
+internal fun NboardImeService.expandApostropheVariants(
+    source: String,
+    penalty: Int,
+    addVariant: (String, Int) -> Unit
+) {
+    if (source.length < 3) {
+        return
+    }
+    if (source.contains('\'')) {
+        val collapsedApostrophes = source.replace("''", "'")
+        if (collapsedApostrophes != source) {
+            addVariant(collapsedApostrophes, penalty)
+        }
+        val stripped = source.trim('\'')
+        if (stripped.length >= 2 && stripped != source) {
+            addVariant(stripped, penalty + 1)
+        }
+        val noApostrophe = source.replace("'", "")
+        if (noApostrophe.length >= 2 && noApostrophe != source) {
+            addVariant(noApostrophe, penalty + 1)
+        }
+        return
+    }
+
+    if (source.startsWith("qu") && source.length > 3) {
+        addVariant("qu'${source.drop(2)}", penalty + 1)
+    }
+    if (source.startsWith("jusqu") && source.length > 6) {
+        addVariant("jusqu'${source.drop(5)}", penalty + 1)
+    }
+    if (source.firstOrNull() in FRENCH_ELISION_PREFIXES && source.length > 2) {
+        addVariant("${source.first()}'${source.drop(1)}", penalty + 1)
+    }
 }
 
 internal fun NboardImeService.expandSuffixRepairVariants(
@@ -640,4 +795,3 @@ internal fun NboardImeService.findRepeatedLetterCorrection(
         null
     }
 }
-

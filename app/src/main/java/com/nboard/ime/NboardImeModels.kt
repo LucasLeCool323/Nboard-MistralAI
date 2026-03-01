@@ -91,3 +91,8 @@ internal data class AutoCorrectionUndo(
     val correctedWord: String,
     val committedSuffix: String
 )
+
+internal data class PredictionRenderCache(
+    val contextKey: String,
+    val words: List<String>
+)

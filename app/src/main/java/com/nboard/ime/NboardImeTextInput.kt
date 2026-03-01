@@ -127,8 +127,13 @@ internal fun NboardImeService.commitSwipeWord(word: String) {
         else -> normalizedWord
     }
 
-    inputConnection.commitText(commitWord, 1)
-    inputConnection.commitText(" ", 1)
+    inputConnection.beginBatchEdit()
+    try {
+        inputConnection.commitText(commitWord, 1)
+        inputConnection.commitText(" ", 1)
+    } finally {
+        inputConnection.endBatchEdit()
+    }
 
     recordLearnedTransition(previousWord1, normalizedWord, boost = 2)
     recordLearnedTrigram(previousWord2, previousWord1, normalizedWord, boost = 2)
@@ -248,25 +253,33 @@ internal fun NboardImeService.commitKeyText(text: String) {
     val nextChar = inputConnection.getTextAfterCursor(1, 0)?.toString()?.firstOrNull()
     val hasSelection = !inputConnection.getSelectedText(0).isNullOrEmpty()
     var autoCorrection: AutoCorrectionResult? = null
-    if (text.length == 1 && AUTOCORRECT_TRIGGER_DELIMITERS.contains(text[0])) {
-        autoCorrection = applyAutoCorrectionBeforeDelimiter(inputConnection)
-    }
-
-    inputConnection.commitText(text, 1)
     var committedSuffix = text
-    if (committedChar != null &&
-        !hasSelection &&
-        autoSpaceAfterPunctuationEnabled &&
-        smartTypingBehavior.shouldAutoSpaceAfterChar(
-            char = committedChar,
-            previousChar = previousChar,
-            last2Chars = last2Chars,
-            nextChar = nextChar
-        )
-    ) {
-        inputConnection.commitText(" ", 1)
-        committedSuffix += " "
-        pendingAutoInsertedSentenceSpace = true
+    inputConnection.beginBatchEdit()
+    try {
+        if (text.length == 1 && AUTOCORRECT_TRIGGER_DELIMITERS.contains(text[0])) {
+            autoCorrection = applyAutoCorrectionBeforeDelimiter(inputConnection)
+        }
+
+        inputConnection.commitText(text, 1)
+        if (committedChar != null &&
+            !hasSelection &&
+            autoSpaceAfterPunctuationEnabled &&
+            smartTypingBehavior.shouldAutoSpaceAfterChar(
+                char = committedChar,
+                previousChar = previousChar,
+                last2Chars = last2Chars,
+                nextChar = nextChar
+            )
+        ) {
+            inputConnection.commitText(" ", 1)
+            committedSuffix += " "
+            pendingAutoInsertedSentenceSpace = true
+        }
+        if (text.length == 1 && AUTOCORRECT_TRIGGER_DELIMITERS.contains(text[0])) {
+            learnPredictionFromContext(inputConnection)
+        }
+    } finally {
+        inputConnection.endBatchEdit()
     }
     pendingAutoCorrection = if (autoCorrection != null) {
         AutoCorrectionUndo(
@@ -276,9 +289,6 @@ internal fun NboardImeService.commitKeyText(text: String) {
         )
     } else {
         null
-    }
-    if (text.length == 1 && AUTOCORRECT_TRIGGER_DELIMITERS.contains(text[0])) {
-        learnPredictionFromContext(inputConnection)
     }
     val consumedOneShot = consumeOneShotShiftIfNeeded(text)
     refreshAutoShiftFromContextAndRerender(consumedOneShot)

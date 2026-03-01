@@ -169,21 +169,32 @@ internal fun NboardImeService.appendSwipeTrailPoint(rawX: Float, rawY: Float, fo
 }
 
 internal fun NboardImeService.findSwipeTokenAt(rawX: Float, rawY: Float): String? {
+    val hitSlop = dp(SWIPE_KEY_HIT_SLOP_DP).toFloat()
+    var bestToken: String? = null
+    var bestDistanceSquared = Float.MAX_VALUE
+    val location = IntArray(2)
     swipeLetterKeyByView.forEach { (view, token) ->
         if (!view.isShown || view.width <= 0 || view.height <= 0) {
             return@forEach
         }
-        val location = IntArray(2)
         view.getLocationOnScreen(location)
-        val left = location[0].toFloat()
-        val top = location[1].toFloat()
-        val right = left + view.width
-        val bottom = top + view.height
+        val left = location[0].toFloat() - hitSlop
+        val top = location[1].toFloat() - hitSlop
+        val right = location[0].toFloat() + view.width + hitSlop
+        val bottom = location[1].toFloat() + view.height + hitSlop
         if (rawX in left..right && rawY in top..bottom) {
-            return token
+            val centerX = location[0] + view.width / 2f
+            val centerY = location[1] + view.height / 2f
+            val dx = rawX - centerX
+            val dy = rawY - centerY
+            val distanceSquared = dx * dx + dy * dy
+            if (distanceSquared < bestDistanceSquared) {
+                bestDistanceSquared = distanceSquared
+                bestToken = token
+            }
         }
     }
-    return null
+    return bestToken
 }
 
 internal fun NboardImeService.extractSwipeIntentTokens(session: SwipeTypingSession): List<String> {
@@ -424,4 +435,3 @@ internal fun NboardImeService.isSubsequence(pattern: String, source: String): Bo
     }
     return patternIndex == pattern.length
 }
-

@@ -376,6 +376,12 @@ class AutoCorrect(
         return value
             .trim()
             .replace('’', '\'')
+            .replace('‘', '\'')
+            .replace('ʼ', '\'')
+            .replace('`', '\'')
+            .replace('´', '\'')
+            .replace('‛', '\'')
+            .replace('＇', '\'')
             .lowercase(Locale.US)
     }
 
@@ -384,7 +390,7 @@ class AutoCorrect(
         private const val MAX_WORD_LENGTH = 24
 
         private val WHITESPACE_REGEX = Regex("\\s+")
-        private val WORD_PATTERN = Regex("[a-zàâäæçéèêëîïôöùûüÿœ'\\-]{2,24}")
+        private val WORD_PATTERN = Regex("[a-zàâäæçéèêëîïôöùûüÿœ]+(?:['-][a-zàâäæçéèêëîïôöùûüÿœ]+)*")
 
         private val ENGLISH_ALPHABET = "abcdefghijklmnopqrstuvwxyz'".toCharArray()
         private val FRENCH_ALPHABET = "abcdefghijklmnopqrstuvwxyzàâäæçéèêëîïôöùûüÿœ'".toCharArray()
@@ -406,7 +412,15 @@ class AutoCorrect(
 
             val normalized = HashMap<String, Int>(raw.size)
             raw.forEach { (wordRaw, freqRaw) ->
-                val word = wordRaw.trim().replace('’', '\'').lowercase(Locale.US)
+                val word = wordRaw.trim()
+                    .replace('’', '\'')
+                    .replace('‘', '\'')
+                    .replace('ʼ', '\'')
+                    .replace('`', '\'')
+                    .replace('´', '\'')
+                    .replace('‛', '\'')
+                    .replace('＇', '\'')
+                    .lowercase(Locale.US)
                 if (word.length !in MIN_WORD_LENGTH..MAX_WORD_LENGTH || !WORD_PATTERN.matches(word)) {
                     return@forEach
                 }

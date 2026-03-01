@@ -208,6 +208,7 @@ class NboardImeService : InputMethodService() {
     internal var latestClipboardDismissed = false
     internal var recentClipboardExpiryJob: Job? = null
     internal var hasPredictionSuggestions = false
+    internal var predictionRenderCache: PredictionRenderCache? = null
     internal val swipeLetterKeyByView = LinkedHashMap<View, String>()
     internal var activeSwipeTypingSession: SwipeTypingSession? = null
     internal var isVoiceListening = false
@@ -279,6 +280,7 @@ class NboardImeService : InputMethodService() {
         return try {
             reloadTypingSettings()
             reloadBottomModesFromSettings()
+            predictionRenderCache = null
             keyboardUiContext = createKeyboardUiContext()
             val root = LayoutInflater.from(keyboardUiContext).inflate(R.layout.keyboard_view, null)
             bindViews(root)
@@ -311,6 +313,7 @@ class NboardImeService : InputMethodService() {
         stopVoiceInput(forceCancel = true)
         pendingAutoCorrection = null
         activeSwipeTypingSession = null
+        predictionRenderCache = null
         inlineInputTarget = InlineInputTarget.NONE
         val newPackage = editorInfo?.packageName
         if (newPackage != activeEditorPackage) {
@@ -362,6 +365,7 @@ class NboardImeService : InputMethodService() {
         pendingAutoCorrection = null
         activeSwipeTypingSession = null
         hasPredictionSuggestions = false
+        predictionRenderCache = null
         pendingAutoInsertedSentenceSpace = false
         if (::emojiSearchInput.isInitialized) {
             emojiSearchInput.text?.clear()
@@ -1071,8 +1075,7 @@ class NboardImeService : InputMethodService() {
             } else {
                 null
             }
-            val numberRowSettingEnabled = KeyboardModeSettings.loadNumberRowEnabled(this)
-            val forcedTopVariant = if (numberRowSettingEnabled) {
+            val forcedTopVariant = if (isNumberRowEnabled) {
                 null
             } else {
                 topNumberVariants[original.lowercase(Locale.US)]
@@ -1080,7 +1083,8 @@ class NboardImeService : InputMethodService() {
             val longPress = buildVariantLongPressAction(
                 original = original,
                 shiftAware = shiftAware,
-                forcedVariant = forcedTopVariant
+                forcedVariant = forcedTopVariant,
+                allowForcedDigitVariant = !isNumberRowEnabled
             )
             val keyTapOnDown = when {
                 longPress != null -> false
@@ -1120,9 +1124,9 @@ class NboardImeService : InputMethodService() {
         val spacer = View(this).apply {
             isClickable = false
             isFocusable = false
-            layoutParams = LinearLayout.LayoutParams(widthPx, dp(52)).also { params ->
+            layoutParams = LinearLayout.LayoutParams(widthPx, dp(KEY_HEIGHT_DP)).also { params ->
                 if (addTrailingGap) {
-                    params.marginEnd = dp(4)
+                    params.marginEnd = dp(KEY_HORIZONTAL_GAP_DP)
                 }
             }
         }
@@ -1138,7 +1142,7 @@ class NboardImeService : InputMethodService() {
             else -> resources.displayMetrics.widthPixels - dp(16)
         }.coerceAtLeast(dp(220))
 
-        val horizontalGapPx = dp(4)
+        val horizontalGapPx = dp(KEY_HORIZONTAL_GAP_DP)
         val row1KeyWidth = ((rowWidthPx - (horizontalGapPx * 9)).toFloat() / 10f)
             .coerceAtLeast(dp(22).toFloat())
         return (row1KeyWidth / 2f).toInt()
@@ -1147,12 +1151,12 @@ class NboardImeService : InputMethodService() {
     private fun buildVariantLongPressAction(
         original: String,
         shiftAware: Boolean,
-        forcedVariant: String? = null
+        forcedVariant: String? = null,
+        allowForcedDigitVariant: Boolean = false
     ): ((View, Float, Float) -> Unit)? {
         val key = original.lowercase(Locale.US)
         val layoutVariants = activeLayoutPack.variants[key]
         val variants = linkedSetOf<String>()
-        val allowForcedDigitVariant = !KeyboardModeSettings.loadNumberRowEnabled(this)
         if (allowForcedDigitVariant) {
             forcedVariant?.let { variants.add(it) }
         }
@@ -1640,9 +1644,9 @@ class NboardImeService : InputMethodService() {
                     else -> currentInputConnection?.commitText(key.lowercase(Locale.US), 1)
                 }
             }
-            button.layoutParams = LinearLayout.LayoutParams(0, dp(52), 1f).also {
+            button.layoutParams = LinearLayout.LayoutParams(0, dp(KEY_HEIGHT_DP), 1f).also {
                 if (index < 4) {
-                    it.marginEnd = dp(4)
+                    it.marginEnd = dp(KEY_HORIZONTAL_GAP_DP)
                 }
             }
             root.addView(button)

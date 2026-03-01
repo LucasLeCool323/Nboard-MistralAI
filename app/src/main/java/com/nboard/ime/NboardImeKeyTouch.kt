@@ -281,12 +281,8 @@ internal fun NboardImeService.configureKeyTouch(
                 longPressRunnable = null
 
                 if (swipeActiveForThisPointer && !longPressTriggered) {
-                    val wasSwiping = activeSwipeTypingSession?.isSwiping == true
                     swipeActiveForThisPointer = false
                     if (finishSwipeTypingAndCommit()) {
-                        return@setOnTouchListener true
-                    }
-                    if (wasSwiping) {
                         return@setOnTouchListener true
                     }
                 }
@@ -382,7 +378,7 @@ internal fun NboardImeService.addSpecialKey(
     longPressAction: ((View, Float, Float) -> Unit)? = null,
     swipeToken: String? = null,
     tapOnDown: Boolean = true,
-    keyHeightDp: Int = 52,
+    keyHeightDp: Int = KEY_HEIGHT_DP,
     useSerifTypeface: Boolean = false,
     isLast: Boolean,
     onTap: () -> Unit
@@ -424,7 +420,7 @@ internal fun NboardImeService.addSpecialKey(
 
     val params = LinearLayout.LayoutParams(0, dp(keyHeightDp), weight)
     if (!isLast) {
-        params.marginEnd = dp(4)
+        params.marginEnd = dp(KEY_HORIZONTAL_GAP_DP)
     }
     keyView.layoutParams = params
     row.addView(keyView)
@@ -445,4 +441,3 @@ internal fun NboardImeService.flattenView(view: View) {
         view.setShadowLayer(0f, 0f, 0f, 0)
     }
 }
-

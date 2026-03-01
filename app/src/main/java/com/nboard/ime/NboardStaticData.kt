@@ -38,10 +38,11 @@ val VARIANT_MAP = mapOf(
 
 val SMART_TYPING_SENTENCE_ENDERS = setOf('.', '!', '?')
 val AUTOCORRECT_TRIGGER_DELIMITERS = setOf(' ', '.', ',', '!', '?', ';', ':', '\n')
+val APOSTROPHE_CHARS = setOf('\'', '’', '‘', 'ʼ', '`', '´', '‛', '＇')
 val VOWELS_FOR_REPEAT = setOf('a', 'e', 'i', 'o', 'u', 'y')
 val DIACRITIC_REGEX = Regex("\\p{M}+")
-val ASSET_WORD_REGEX = Regex("[a-zàâäéèêëîïôöùûüçœæÿ'\\-]{2,24}")
-val WORD_TOKEN_REGEX = Regex("[\\p{L}][\\p{L}'’\\-]*")
+val ASSET_WORD_REGEX = Regex("[a-zàâäéèêëîïôöùûüçœæÿ]+(?:['-][a-zàâäéèêëîïôöùûüçœæÿ]+)*")
+val WORD_TOKEN_REGEX = Regex("[\\p{L}][\\p{L}'’‘ʼ`´‛＇\\-]*")
 val WHITESPACE_REGEX = Regex("\\s+")
 
 val ENGLISH_WORDS = setOf(
@@ -132,13 +133,58 @@ val FRENCH_TYPOS = mapOf(
         "salot" to "salut",
         "bjr" to "bonjour",
         "stp" to "s'il te plaît",
-        "svp" to "s'il vous plaît"
+        "svp" to "s'il vous plaît",
+        "cest" to "c'est",
+        "cetait" to "c'était",
+        "cetaient" to "c'étaient",
+        "jaime" to "j'aime",
+        "jai" to "j'ai",
+        "jaii" to "j'ai",
+        "jaurai" to "j'aurai",
+        "jaurais" to "j'aurais",
+        "jetais" to "j'étais",
+        "quil" to "qu'il",
+        "quon" to "qu'on",
+        "daccord" to "d'accord",
+        "lheure" to "l'heure",
+        "lamour" to "l'amour",
+        "aujourdhui" to "aujourd'hui",
+        "presquile" to "presqu'île"
     )
 
 val ENGLISH_TYPOS = mapOf(
         "teh" to "the",
         "woudl" to "would",
-        "dont" to "don't"
+        "dont" to "don't",
+        "cant" to "can't",
+        "wont" to "won't",
+        "isnt" to "isn't",
+        "arent" to "aren't",
+        "wasnt" to "wasn't",
+        "werent" to "weren't",
+        "hasnt" to "hasn't",
+        "havent" to "haven't",
+        "hadnt" to "hadn't",
+        "didnt" to "didn't",
+        "doesnt" to "doesn't",
+        "couldnt" to "couldn't",
+        "wouldnt" to "wouldn't",
+        "shouldnt" to "shouldn't",
+        "mustnt" to "mustn't",
+        "im" to "i'm",
+        "ive" to "i've",
+        "youre" to "you're",
+        "youve" to "you've",
+        "youll" to "you'll",
+        "youd" to "you'd",
+        "theyre" to "they're",
+        "theyve" to "they've",
+        "theyll" to "they'll",
+        "weve" to "we've",
+        "whats" to "what's",
+        "thats" to "that's",
+        "heres" to "here's",
+        "theres" to "there's"
     )
 
 val ALL_EMOJIS = listOf(

@@ -298,11 +298,13 @@ internal fun NboardImeService.renderPredictionRow() {
         return
     }
     if (!shouldShowPredictionRow()) {
+        predictionRenderCache = null
         setPredictionWords(emptyList())
         return
     }
 
     val inputConnection = currentInputConnection ?: run {
+        predictionRenderCache = null
         setPredictionWords(emptyList())
         return
     }
@@ -310,6 +312,13 @@ internal fun NboardImeService.renderPredictionRow() {
         .getTextBeforeCursor(PREDICTION_CONTEXT_WINDOW, 0)
         ?.toString()
         .orEmpty()
+    val contextKey = predictionRenderContextKey(beforeCursor)
+    predictionRenderCache?.let { cache ->
+        if (cache.contextKey == contextKey) {
+            setPredictionWords(cache.words)
+            return
+        }
+    }
     val sentenceContext = extractPredictionSentenceContext(beforeCursor)
     val fragment = extractCurrentWordFragment(beforeCursor)
     val normalizedFragment = normalizeWord(fragment)
@@ -352,6 +361,24 @@ internal fun NboardImeService.renderPredictionRow() {
         .take(MAX_PREDICTION_CANDIDATES)
 
     setPredictionWords(predictions)
+    predictionRenderCache = PredictionRenderCache(
+        contextKey = contextKey,
+        words = predictions
+    )
+}
+
+internal fun NboardImeService.predictionRenderContextKey(beforeCursor: String): String {
+    return buildString(beforeCursor.length + 96) {
+        append(keyboardLanguageMode.name)
+        append('|')
+        append(wordPredictionEnabled)
+        append('|')
+        append(isAutoShiftEnabled)
+        append('|')
+        append(learningDirtyUpdates)
+        append('|')
+        append(beforeCursor)
+    }
 }
 
 internal fun NboardImeService.mergePrimaryPredictionCandidates(primary: List<String>, fallback: List<String>): List<String> {

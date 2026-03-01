@@ -161,18 +161,18 @@ internal fun NboardImeService.refreshUi() {
 
 internal fun NboardImeService.applyBottomRowLayoutForClipboard(clipboardOpen: Boolean) {
     if (isGboardLayoutActive()) {
-        updateBottomKeyLayout(modeSwitchButton, 1.18f, marginEndDp = 4)
-        updateBottomKeyLayout(aiModeButton, 1f, marginEndDp = 4)
-        updateBottomKeyLayout(leftPunctuationButton, 1f, marginEndDp = 4)
-        updateBottomKeyLayout(spaceButton, 4.41f, marginEndDp = 4)
-        updateBottomKeyLayout(rightPunctuationButton, 1f, marginEndDp = 4)
+        updateBottomKeyLayout(modeSwitchButton, 1.18f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+        updateBottomKeyLayout(aiModeButton, 1f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+        updateBottomKeyLayout(leftPunctuationButton, 1f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+        updateBottomKeyLayout(spaceButton, 4.7f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+        updateBottomKeyLayout(rightPunctuationButton, 1f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
         updateBottomKeyLayout(actionButton, 1.75f, marginEndDp = 0)
         return
     }
-    updateBottomKeyLayout(modeSwitchButton, 1.2f, marginEndDp = 4)
-    updateBottomKeyLayout(aiModeButton, 1f, marginEndDp = 4)
-    updateBottomKeyLayout(spaceButton, if (clipboardOpen) 7.8f else 5f, marginEndDp = 4)
-    updateBottomKeyLayout(clipboardButton, 1f, marginEndDp = 4)
+    updateBottomKeyLayout(modeSwitchButton, 1.2f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+    updateBottomKeyLayout(aiModeButton, 1f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+    updateBottomKeyLayout(spaceButton, if (clipboardOpen) 8.1f else 5.4f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
+    updateBottomKeyLayout(clipboardButton, 1f, marginEndDp = KEY_HORIZONTAL_GAP_DP)
     updateBottomKeyLayout(actionButton, if (clipboardOpen) 1.35f else 1.9f, marginEndDp = 0)
 }
 

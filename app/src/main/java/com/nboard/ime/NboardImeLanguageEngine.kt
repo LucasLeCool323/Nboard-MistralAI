@@ -81,6 +81,12 @@ internal fun NboardImeService.foldWord(word: String): String {
     val normalized = Normalizer.normalize(word, Normalizer.Form.NFD)
     return DIACRITIC_REGEX.replace(normalized, "")
         .replace('’', '\'')
+        .replace('‘', '\'')
+        .replace('ʼ', '\'')
+        .replace('`', '\'')
+        .replace('´', '\'')
+        .replace('‛', '\'')
+        .replace('＇', '\'')
         .lowercase(Locale.US)
 }
 
@@ -354,7 +360,7 @@ internal fun NboardImeService.extractNormalizedWordTokens(value: String): List<S
     }
     val tokens = WORD_TOKEN_REGEX
         .findAll(value)
-        .map { normalizeWord(it.value).trim('\'', '’') }
+        .map { normalizeWord(it.value).trim('\'') }
         .filter { it.length in 1..24 }
         .toList()
     return if (tokens.size <= LEARNING_TOKEN_WINDOW) {
@@ -370,7 +376,7 @@ internal fun NboardImeService.extractPredictionTokens(value: String): List<Strin
     }
     val tokens = WORD_TOKEN_REGEX
         .findAll(value)
-        .map { normalizeWord(it.value).trim('\'', '’') }
+        .map { normalizeWord(it.value).trim('\'') }
         .filter { it.length in 1..24 }
         .toList()
     return if (tokens.size <= PREDICTION_TOKEN_WINDOW) {
@@ -443,11 +449,18 @@ internal fun NboardImeService.extractCurrentWordFragment(value: String): String 
 }
 
 internal fun NboardImeService.isWordChar(char: Char): Boolean {
-    return char.isLetter() || char == '\'' || char == '’'
+    return char.isLetter() || char in APOSTROPHE_CHARS
 }
 
 internal fun NboardImeService.normalizeWord(word: String): String {
-    return word.lowercase(Locale.US).replace('’', '\'')
+    return word.lowercase(Locale.US)
+        .replace('’', '\'')
+        .replace('‘', '\'')
+        .replace('ʼ', '\'')
+        .replace('`', '\'')
+        .replace('´', '\'')
+        .replace('‛', '\'')
+        .replace('＇', '\'')
 }
 
 internal fun NboardImeService.applyWordCase(base: String, source: String): String {
