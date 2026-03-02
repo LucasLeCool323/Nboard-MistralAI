@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.4.1] - 2026-03-02
+
+### Added
+- Added `Community Layouts/` folder explicitly linked within the app settings via the "More layout here" button.
+- Added contributor layouts: `arabic-qwerty-gboard`, `german-qwertz-gboard`.
+- Added example AI layouts: `hindi-inscript-classic`, `japanese-romaji-gboard`, `chinese-pinyin-gboard`.
+
+### Changed
+- Improved settings iconography by replacing custom placeholders with official Lucide SVGs (`rotate-ccw`, `coffee`).
+- Polished app branding icons across the launcher and onboarding UI.
+
+### Notes
+- Thank you for the incredible community support and hitting 50 stars on GitHub!
+
 ## [1.4.0] - 2026-02-16
 
 ### Added
