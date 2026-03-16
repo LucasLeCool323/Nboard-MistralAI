@@ -12,6 +12,14 @@
   Minimal Android keyboard with AI tools, clipboard power features, emoji search, and fast typing UX.
 </p>
 
+## Before you continue
+
+This fork is only made to use Mistral API key. Normally i should have replaced everything but if something breaks, please make an issue. The Mistral API replaces Gemini, if you want to use gemini, you should install the original version.
+
+## Fun fact
+
+The code of the first version of the fork i will release is made made on my Redmi Note 13 Pro Plus 5G at 2AM before a school day.
+
 ## About
 
 Built for Nothing Phone users who wanted a keyboard matching their device's minimal aesthetic — works great on any Android phone.
