@@ -319,13 +319,13 @@ class MainActivity : AppCompatActivity() {
     private fun showApiKeyDialog() {
         val input = EditText(this).apply {
             setText(KeyboardModeSettings.loadGeminiApiKey(this@MainActivity))
-            hint = "Paste Gemini API key"
+            hint = "Paste Mistral API key"
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             setSelection(text.length)
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Set Gemini API key")
+            .setTitle("Set Mistral API key")
             .setView(input)
             .setPositiveButton("Save") { _, _ ->
                 KeyboardModeSettings.saveGeminiApiKey(this, input.text?.toString().orEmpty())
