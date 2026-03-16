@@ -12,18 +12,6 @@
   Minimal Android keyboard with AI tools, clipboard power features, emoji search, and fast typing UX.
 </p>
 
-<p align="center">
-  <a href="https://github.com/MathieuDvv/Nboard/releases">Download APK</a>
-  ·
-  <a href="https://github.com/MathieuDvv/Nboard/releases/latest">Download Latest Release</a>
-  ·
-  <a href="#build-locally">Build Locally</a>
-  ·
-  <a href="#features">Features</a>
-  ·
-  <a href="#contributing--feedback">Contributing</a>
-</p>
-
 ## About
 
 Built for Nothing Phone users who wanted a keyboard matching their device's minimal aesthetic — works great on any Android phone.
