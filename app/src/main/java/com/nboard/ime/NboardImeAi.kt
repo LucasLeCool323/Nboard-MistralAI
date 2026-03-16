@@ -118,7 +118,7 @@ internal fun NboardImeService.submitAiPrompt() {
     }
 
     if (!geminiClient.isConfigured) {
-        toast("Gemini API key missing. AI is disabled")
+        toast("Mistral API key missing. AI is disabled")
         return
     }
 
@@ -159,7 +159,7 @@ internal fun NboardImeService.runQuickAiAction(action: QuickAiAction) {
     }
 
     if (!geminiClient.isConfigured) {
-        toast("Gemini API key missing. AI is disabled")
+        toast("Mistral API key missing. AI is disabled")
         return
     }
 
